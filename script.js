@@ -57,7 +57,6 @@ function Deck(){
     };
     this.dealCard = function(){
 
-
     }
 }
 
