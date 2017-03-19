@@ -6,14 +6,17 @@ $("document").ready(function () {
     init();
 });
 
-function init(){
+function init() {
     deck = new Stack();
     discard = new Stack();
-    deck.makeDeck(1);
+    deck.makeDeck(2);
 
     game = new GameController();
     game.display();
     game.createPlayers(game.numberOfPlayers);
+
+    deck.shuffle(3);
+    game.dealCards();
 }
 
 /**
@@ -29,6 +32,7 @@ function Stack() {
     this.addCard = stackAddCard;
     this.combine = stackCombine;
     this.cardCount = stackCardCount;
+    this.checkScore = stackCheckScore;
 }
 
 function stackMakeDeck(numOfDecks) {
@@ -52,7 +56,7 @@ function stackShuffle(timesToShuffle) {
 
     for (i = 0; i < timesToShuffle; i++) {
         for (j = 0; j < this.cards.length; j++) {
-            k = game.getRanNum(0, this.cards.length -1);
+            k = game.getRanNum(0, this.cards.length - 1);
             temp = this.cards[j];
             this.cards[j] = this.cards[k];
             this.cards[k] = temp;
@@ -69,18 +73,41 @@ function stackDealCard() {
     }
 }
 
-function stackAddCard (card){
+function stackAddCard(card) {
     this.cards.push(card);
     game.display();
+
 }
 
-function stackCombine (stack){
+function stackCombine(stack) {
     this.cards += stack.cards;
     stack.cards = [];
 }
 
-function stackCardCount (){
+function stackCardCount() {
     return this.cards.length;
+}
+
+function stackCheckScore() {
+    var total;
+
+    total = 0;
+
+    for (var card in this.cards) {
+        if (this.cards[card].name === 'A') {
+            total += this.cards[card].value();
+        }
+        else {
+            total += this.cards[card].value();
+        }
+    }
+    for (var card in this.cards) {
+        if (this.cards[card].name === "A" && total <= 11) {
+            total += 10;
+        }
+    }
+    console.log('total is : ', total);
+    return total;
 }
 
 /**
@@ -110,7 +137,7 @@ function GameController() {
     }
 
     // Updates Display of DOM
-    this.display = function(){
+    this.display = function () {
         var divElem, left, top;
         var cardCount;
 
@@ -118,28 +145,28 @@ function GameController() {
         left = 0;
         top = 0;
         divElem = $("#deckDiv");
-        while(divElem.find(".card").length > 0){
+        while (divElem.find(".card").length > 0) {
             divElem.empty();
         }
         cardCount = deck.cardCount();
-        for (i = 0; i < cardCount; i++){
+        for (i = 0; i < cardCount; i++) {
             card = deck.cards[i].createCardElem();
             card[0].style.left = left + 'px';
             card[0].style.top = top + 'px';
             divElem.append(card);
             left += 0;
-            top += 15;
+            top += 6;
         }
 
         // Display Discard Stack
         left = 0;
         top = 0;
         divElem = $("#discardDiv");
-        while(divElem.find(".card").length > 0){
+        while (divElem.find(".card").length > 0) {
             divElem.empty();
         }
         cardCount = discard.cardCount();
-        for (i = 0; i < cardCount; i++){
+        for (i = 0; i < cardCount; i++) {
             card = discard.cards[i].createCardElem();
             card[0].style.left = left + 'px';
             card[0].style.top = top + 'px';
@@ -149,32 +176,48 @@ function GameController() {
         }
 
         // Display Player Stacks
-        for (var player in game.playersArr){
+        for (var player in game.playersArr) {
             game.playersArr[player].cardLeft = 0;
             game.playersArr[player].cardTop = 0;
 
-
             playerStack = game.playersArr[player].stack;
             console.log('player is : ', game.playersArr[player]);
-            divElem = $(game.playersArr[player].domElem[0].children[4]);
+            divElem = $(game.playersArr[player].domElem[0].children[5]);
             console.log('divElem is : ', divElem);
-            while(divElem.find(".card").length > 0){
+            while (divElem.find(".card").length > 0) {
                 divElem.empty();
             }
             cardCount = playerStack.cardCount();
             console.log('cardCount is : ', cardCount);
-            for (i = 0; i < cardCount; i++){
+            for (i = 0; i < cardCount; i++) {
                 card = playerStack.cards[i].createCardElem();
                 card[0].style.left = game.playersArr[player].cardLeft + 'px';
                 card[0].style.top = game.playersArr[player].cardTop + 'px';
                 divElem.append(card);
-                game.playersArr[player].cardLeft += 20;
+                game.playersArr[player].cardLeft += 10;
                 game.playersArr[player].cardTop += 80;
             }
+        }
+    };
+
+    this.updateTotal = function (player) {
+        if (player.stack.checkScore() < 22) {
+            $(player.domElem[0].children[4]).text("Total : " + player.stack.checkScore())
+        } else {
+            $(player.domElem[0].children[4]).text("Bust")
 
         }
+    }
 
-
+    this.dealCards = function () {
+        for (j = 0; j < 2; j++) {
+                for(var player in game.playersArr){
+                    var thePlayer = game.playersArr[player];
+                    thePlayer.stack.addCard(deck.dealCard());
+                    $(thePlayer.domElem[0].children[4]).text("Total : " + thePlayer.stack.checkScore());
+                    game.updateTotal(thePlayer);
+                }
+        }
     }
 }
 
@@ -190,20 +233,30 @@ function Card(name, suit) {
 }
 
 Card.prototype.value = function () {
-    if (this.name == "J" || "Q" || "K") {
-        return [10];
-    } else if (this.name == "A") {
-        return [1, 11];
+    if (this.name === "J" || this.name === "Q" || this.name === "K") {
+        return 10;
+    } else if (this.name === "A") {
+        return 1;
     } else {
         return parseInt(this.name, 10);
     }
 };
 
-Card.prototype.createCardElem = function() {
+Card.prototype.createCardElem = function () {
     var card = $("<div>", {
-        class: 'card ' + this.suit,
+        class: 'card'
+    });
+
+    var face = $("<div>", {
+        class: 'face ' + this.suit,
         text: this.name
     });
+    var back = $("<div>", {
+        class: 'back'
+    });
+
+    card.append(face, back);
+
     return card;
 };
 
@@ -225,8 +278,7 @@ function Player(playerName, playerChipCount) {
     this.hitMe = function () {
         console.log(self.name + " knocks on the table");
         self.stack.addCard(deck.dealCard());
-        console.log('this is : ', self);
-        // game.dealCard(self);
+        game.updateTotal(self);
 
     };
     this.hold = function () {
@@ -253,6 +305,10 @@ function Player(playerName, playerChipCount) {
             class: "actionBtns",
             text: "Hold"
         });
+        this.cardTotal = $("<div>", {
+            class: "cardTotal",
+            text: "Total : "
+        });
         this.cardsDom = $("<div>", {
             class: 'playerCards'
         });
@@ -261,10 +317,9 @@ function Player(playerName, playerChipCount) {
         //     text: deck.cardNames[game.getRanNum(0, deck.cardNames.length - 1)]
         // });
         $(this.cardsDom).append(this.cards);
-        $(this.domElem).append(this.nameDom, this.chipsDom, this.hitBtn, this.holdBtn, this.cardsDom);
+        $(this.domElem).append(this.nameDom, this.chipsDom, this.hitBtn, this.holdBtn, this.cardTotal, this.cardsDom);
         $(this.holdBtn).click(this.hold);
         $(this.hitBtn).click(this.hitMe);
         $("#gameArea").append(this.domElem);
     }
-
 }
