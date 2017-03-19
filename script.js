@@ -63,7 +63,7 @@ function stackShuffle(timesToShuffle) {
 
 function stackDealCard() {
     if (this.cards.length > 0) {
-        return this.cards.shift();
+        return this.cards.pop();
     } else {
         return null;
     }
@@ -109,10 +109,12 @@ function GameController() {
         console.log("PlayersArr is : ", this.playersArr);
     }
 
+    // Updates Display of DOM
     this.display = function(){
         var divElem, left, top;
         var cardCount;
 
+        // Display Deck Stack
         left = 0;
         top = 0;
         divElem = $("#deckDiv");
@@ -125,11 +127,11 @@ function GameController() {
             card[0].style.left = left + 'px';
             card[0].style.top = top + 'px';
             divElem.append(card);
-            left += 2;
-            top += 1;
+            left += 0;
+            top += 15;
         }
 
-
+        // Display Discard Stack
         left = 0;
         top = 0;
         divElem = $("#discardDiv");
@@ -142,10 +144,35 @@ function GameController() {
             card[0].style.left = left + 'px';
             card[0].style.top = top + 'px';
             divElem.append(card);
-            left += 2;
-            top += 1;
+            left += 0;
+            top += 15;
         }
 
+        // Display Player Stacks
+        for (var player in game.playersArr){
+            game.playersArr[player].cardLeft = 0;
+            game.playersArr[player].cardTop = 0;
+
+
+            playerStack = game.playersArr[player].stack;
+            console.log('player is : ', game.playersArr[player]);
+            divElem = $(game.playersArr[player].domElem[0].children[4]);
+            console.log('divElem is : ', divElem);
+            while(divElem.find(".card").length > 0){
+                divElem.empty();
+            }
+            cardCount = playerStack.cardCount();
+            console.log('cardCount is : ', cardCount);
+            for (i = 0; i < cardCount; i++){
+                card = playerStack.cards[i].createCardElem();
+                card[0].style.left = game.playersArr[player].cardLeft + 'px';
+                card[0].style.top = game.playersArr[player].cardTop + 'px';
+                divElem.append(card);
+                game.playersArr[player].cardLeft += 20;
+                game.playersArr[player].cardTop += 80;
+            }
+
+        }
 
 
     }
@@ -191,10 +218,14 @@ function Player(playerName, playerChipCount) {
     this.name = playerName;
     this.chipCount = playerChipCount;
     this.cardValueTotal = 0;
-    this.playerCards = [];
+    this.cardLeft = 0;
+    this.cardTop = 0;
+    this.stack = new Stack();
 
     this.hitMe = function () {
         console.log(self.name + " knocks on the table");
+        self.stack.addCard(deck.dealCard());
+        console.log('this is : ', self);
         // game.dealCard(self);
 
     };
