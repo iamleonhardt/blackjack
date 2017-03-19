@@ -3,73 +3,164 @@
  */
 
 $("document").ready(function () {
+    init();
+});
+
+function init(){
+    deck = new Stack();
+    discard = new Stack();
+    deck.makeDeck(1);
+
+    game = new GameController();
+    game.display();
     game.createPlayers(game.numberOfPlayers);
-})
+}
 
+/**
+ * Stack Constructor
+ * @constructor
+ */
+function Stack() {
+    this.cards = [];
 
+    this.makeDeck = stackMakeDeck;
+    this.shuffle = stackShuffle;
+    this.dealCard = stackDealCard;
+    this.addCard = stackAddCard;
+    this.combine = stackCombine;
+    this.cardCount = stackCardCount;
+}
 
-// Game Controller
-function GameController (){
-    this.numberOfPlayers = 5;
+function stackMakeDeck(numOfDecks) {
+    var i;
+    this.cards = [];
+    this.cardNames = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+    this.suits = ['heart', 'spade', 'club', 'diamond'];
+
+    for (i = 0; i < numOfDecks; i++) {
+        for (var suit in this.suits) {
+            for (var card in this.cardNames) {
+                this.cards.push(new Card(this.cardNames[card], this.suits[suit]));
+            }
+        }
+    }
+}
+
+function stackShuffle(timesToShuffle) {
+    var i, j, k;
+    var temp;
+
+    for (i = 0; i < timesToShuffle; i++) {
+        for (j = 0; j < this.cards.length; j++) {
+            k = game.getRanNum(0, this.cards.length -1);
+            temp = this.cards[j];
+            this.cards[j] = this.cards[k];
+            this.cards[k] = temp;
+        }
+    }
+    game.display();
+}
+
+function stackDealCard() {
+    if (this.cards.length > 0) {
+        return this.cards.shift();
+    } else {
+        return null;
+    }
+}
+
+function stackAddCard (card){
+    this.cards.push(card);
+    game.display();
+}
+
+function stackCombine (stack){
+    this.cards += stack.cards;
+    stack.cards = [];
+}
+
+function stackCardCount (){
+    return this.cards.length;
+}
+
+/**
+ * GameController Constructor
+ * @constructor
+ */
+function GameController() {
     this.playerNames = ["Charles", "John", "Jorge", "Mark", "Yaeri"];
     this.playerChips = [300, 300, 280, 300, 1000];
+
+    this.numberOfPlayers = 5;
     this.playersArr = [];
 
-    this.dealCard = function(thisPlayer){
-        var cards = $("<div>", {
-            class: 'card ' + game.suits[game.getRanNum(0, game.suits.length-1)],
-            text: game.cardNames[game.getRanNum(0, game.cardNames.length-1)]
-        });
-        $(thisPlayer.domElem[0].lastChild).append(cards);
-    }
-
-    this.getRanNum = function (min, max){
+    this.getRanNum = function (min, max) {
         return Math.floor(Math.random() * (max - min + 1) + min);
     };
 
     this.createPlayers = function (num) {
+        var i;
         this.numberOfPlayers = num;
-        for (var i = 0; i < this.numberOfPlayers; i++) {
+        for (i = 0; i < this.numberOfPlayers; i++) {
             tempPlayer = new Player(this.playerNames[i], this.playerChips[i]);
             tempPlayer.createDomElem();
             this.playersArr.push(tempPlayer);
         }
         console.log("PlayersArr is : ", this.playersArr);
     }
-}
 
-var game = new GameController();
-var deck = new Deck();
+    this.display = function(){
+        var divElem, left, top;
+        var cardCount;
 
-// Deck Constructor
-function Deck(){
-    this.cards = [];
-    this.cardNames = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
-    this.suits = ['heart', 'spade', 'club', 'diamond'];
-
-    this.deck = [];
-    this.makeDeck = function(){
-        for (var suit in this.suits){
-            for(var card in this.cardNames){
-                this.cards.push(new Card(this.cardNames[card], this.suits[suit]));
-            }
+        left = 0;
+        top = 0;
+        divElem = $("#deckDiv");
+        while(divElem.find(".card").length > 0){
+            divElem.empty();
         }
-    };
-    this.dealCard = function(){
+        cardCount = deck.cardCount();
+        for (i = 0; i < cardCount; i++){
+            card = deck.cards[i].createCardElem();
+            card[0].style.left = left + 'px';
+            card[0].style.top = top + 'px';
+            divElem.append(card);
+            left += 2;
+            top += 1;
+        }
+
+
+        left = 0;
+        top = 0;
+        divElem = $("#discardDiv");
+        while(divElem.find(".card").length > 0){
+            divElem.empty();
+        }
+        cardCount = discard.cardCount();
+        for (i = 0; i < cardCount; i++){
+            card = discard.cards[i].createCardElem();
+            card[0].style.left = left + 'px';
+            card[0].style.top = top + 'px';
+            divElem.append(card);
+            left += 2;
+            top += 1;
+        }
+
+
 
     }
 }
 
-
-// Card Constructor
+/**
+ * Card Constructor
+ * @param name
+ * @param suit
+ * @constructor
+ */
 function Card(name, suit) {
     this.name = name;
     this.suit = suit;
 }
-
-Card.prototype.image = function () {
-    return "http://www.jonarnaldo.com/sandbox/deck_images/" + name + "_of_" + suit + ".png";
-};
 
 Card.prototype.value = function () {
     if (this.name == "J" || "Q" || "K") {
@@ -81,7 +172,20 @@ Card.prototype.value = function () {
     }
 };
 
-// Player Constructor
+Card.prototype.createCardElem = function() {
+    var card = $("<div>", {
+        class: 'card ' + this.suit,
+        text: this.name
+    });
+    return card;
+};
+
+/**
+ * Player Constructor
+ * @param playerName
+ * @param playerChipCount
+ * @constructor
+ */
 function Player(playerName, playerChipCount) {
     var self = this;
     this.name = playerName;
@@ -89,26 +193,27 @@ function Player(playerName, playerChipCount) {
     this.cardValueTotal = 0;
     this.playerCards = [];
 
-    this.hitMe = function(){
+    this.hitMe = function () {
         console.log(self.name + " knocks on the table");
-        game.dealCard(self);
-    }
-    this.hold = function(){
+        // game.dealCard(self);
+
+    };
+    this.hold = function () {
         console.log(self.name + " decides to hold")
-    }
+    };
 
     this.createDomElem = function () {
         this.domElem = $("<div>", {
             class: "player"
         });
         this.nameDom = $("<div>", {
-                class: 'playerName',
-                text: this.name
-            });
+            class: 'playerName',
+            text: this.name
+        });
         this.chipsDom = $("<div>", {
-                class: 'playerChips',
-                text: this.chipCount
-            });
+            class: 'playerChips',
+            text: this.chipCount
+        });
         this.hitBtn = $("<div>", {
             class: "actionBtns",
             text: "Hit"
@@ -116,14 +221,14 @@ function Player(playerName, playerChipCount) {
         this.holdBtn = $("<div>", {
             class: "actionBtns",
             text: "Hold"
-        })
+        });
         this.cardsDom = $("<div>", {
             class: 'playerCards'
         });
-        this.cards = $("<div>", {
-            class: 'card ' + deck.suits[game.getRanNum(0, deck.suits.length-1)],
-            text: deck.cardNames[game.getRanNum(0, deck.cardNames.length-1)]
-        });
+        // this.cards = $("<div>", {
+        //     class: 'card ' + deck.suits[game.getRanNum(0, deck.suits.length - 1)],
+        //     text: deck.cardNames[game.getRanNum(0, deck.cardNames.length - 1)]
+        // });
         $(this.cardsDom).append(this.cards);
         $(this.domElem).append(this.nameDom, this.chipsDom, this.hitBtn, this.holdBtn, this.cardsDom);
         $(this.holdBtn).click(this.hold);
@@ -132,5 +237,3 @@ function Player(playerName, playerChipCount) {
     }
 
 }
-
-
