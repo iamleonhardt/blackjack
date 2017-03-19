@@ -26,16 +26,16 @@ function init() {
 function Stack() {
     this.cards = [];
 
-    this.makeDeck = stackMakeDeck;
-    this.shuffle = stackShuffle;
-    this.dealCard = stackDealCard;
-    this.addCard = stackAddCard;
-    this.combine = stackCombine;
-    this.cardCount = stackCardCount;
-    this.checkScore = stackCheckScore;
+    // this.makeDeck = stackMakeDeck;
+    // this.shuffle = stackShuffle;
+    // this.dealCard = stackDealCard;
+    // this.addCard = stackAddCard;
+    // this.combine = stackCombine;
+    // this.cardCount = stackCardCount;
+    // this.checkScore = stackCheckScore;
 }
 
-function stackMakeDeck(numOfDecks) {
+Stack.prototype.makeDeck = function(numOfDecks){
     var i;
     this.cards = [];
     this.cardNames = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
@@ -48,9 +48,9 @@ function stackMakeDeck(numOfDecks) {
             }
         }
     }
-}
+};
 
-function stackShuffle(timesToShuffle) {
+Stack.prototype.shuffle = function(timesToShuffle){
     var i, j, k;
     var temp;
 
@@ -63,32 +63,31 @@ function stackShuffle(timesToShuffle) {
         }
     }
     game.display();
-}
+};
 
-function stackDealCard() {
+Stack.prototype.dealCard = function(){
     if (this.cards.length > 0) {
         return this.cards.pop();
     } else {
         return null;
     }
-}
+};
 
-function stackAddCard(card) {
+Stack.prototype.addCard = function(card){
     this.cards.push(card);
     game.display();
+};
 
-}
-
-function stackCombine(stack) {
+Stack.prototype.combine = function(stack){
     this.cards += stack.cards;
     stack.cards = [];
-}
+};
 
-function stackCardCount() {
+Stack.prototype.cardCount = function(){
     return this.cards.length;
-}
+};
 
-function stackCheckScore() {
+Stack.prototype.checkScore = function(){
     var total;
 
     total = 0;
@@ -106,9 +105,83 @@ function stackCheckScore() {
             total += 10;
         }
     }
-    console.log('total is : ', total);
     return total;
-}
+};
+//
+// function stackMakeDeck(numOfDecks) {
+//     var i;
+//     this.cards = [];
+//     this.cardNames = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+//     this.suits = ['heart', 'spade', 'club', 'diamond'];
+//
+//     for (i = 0; i < numOfDecks; i++) {
+//         for (var suit in this.suits) {
+//             for (var card in this.cardNames) {
+//                 this.cards.push(new Card(this.cardNames[card], this.suits[suit]));
+//             }
+//         }
+//     }
+// }
+//
+// function stackShuffle(timesToShuffle) {
+//     var i, j, k;
+//     var temp;
+//
+//     for (i = 0; i < timesToShuffle; i++) {
+//         for (j = 0; j < this.cards.length; j++) {
+//             k = game.getRanNum(0, this.cards.length - 1);
+//             temp = this.cards[j];
+//             this.cards[j] = this.cards[k];
+//             this.cards[k] = temp;
+//         }
+//     }
+//     game.display();
+// }
+//
+// function stackDealCard() {
+//     if (this.cards.length > 0) {
+//         return this.cards.pop();
+//     } else {
+//         return null;
+//     }
+// }
+//
+// function stackAddCard(card) {
+//     this.cards.push(card);
+//     game.display();
+//
+// }
+//
+// function stackCombine(stack) {
+//     this.cards += stack.cards;
+//     stack.cards = [];
+// }
+//
+// function stackCardCount() {
+//     return this.cards.length;
+// }
+//
+// function stackCheckScore() {
+//     var total;
+//
+//     total = 0;
+//
+//     for (var card in this.cards) {
+//         if (this.cards[card].name === 'A') {
+//             total += this.cards[card].value();
+//         }
+//         else {
+//             total += this.cards[card].value();
+//         }
+//     }
+//     for (var card in this.cards) {
+//         if (this.cards[card].name === "A" && total <= 11) {
+//             total += 10;
+//         }
+//     }
+//     console.log('total is : ', total);
+//     return total;
+// }
 
 /**
  * GameController Constructor
@@ -181,14 +254,12 @@ function GameController() {
             game.playersArr[player].cardTop = 0;
 
             playerStack = game.playersArr[player].stack;
-            console.log('player is : ', game.playersArr[player]);
+            // console.log('player is : ', game.playersArr[player]);
             divElem = $(game.playersArr[player].domElem[0].children[5]);
-            console.log('divElem is : ', divElem);
             while (divElem.find(".card").length > 0) {
                 divElem.empty();
             }
             cardCount = playerStack.cardCount();
-            console.log('cardCount is : ', cardCount);
             for (i = 0; i < cardCount; i++) {
                 card = playerStack.cards[i].createCardElem();
                 card[0].style.left = game.playersArr[player].cardLeft + 'px';
