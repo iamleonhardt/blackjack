@@ -1,6 +1,7 @@
 body {
     padding: 0;
     margin: 0;
+    /*font-size: 0;*/
     font-family: Roboto, Arial, sans-serif;
     text-align: center;
 }
@@ -12,9 +13,30 @@ body {
     background-image: url(images/felt.jpg);
 }
 
-.player {
+#deckDiv, #discardDiv {
+    position: absolute;
     background-color: rgba(47, 47, 47, 0.3);
     border-radius: 10px;
+    color: #ffffff;
+    display: inline-block;
+    margin: 0 auto;
+}
+
+#deckDiv {
+    /*width: 1340px;*/
+    left: 10px;
+    top: 10px;
+}
+
+#discardDiv {
+    right: 110px;
+    top: 10px;
+
+}
+
+.player {
+    background-color: rgba(47, 47, 47, 0.3);
+    border-radius: 6px;
     color: #ffffff;
     display: inline-block;
     margin: 10px;
@@ -26,19 +48,50 @@ body {
 }
 
 .playerCards {
+    position: relative;
     margin: 20px 10px;
 }
 
 .card {
+    position: absolute;
     height: 100px;
     width: 80px;
     border-radius: 4px;
     color: #000000;
     font-size: 48px;
     line-height: 100px;
-    background: #ffffff 0 0/ 30px no-repeat;
     display: inline-block;
     margin: 10px;
+}
+
+.back {
+    position: absolute;
+    transform: perspective(600px) rotateY(-180deg);
+    backface-visibility: hidden;
+    transition: transform .5s linear;
+    background: url(images/cardBG.png) 0 0/80px 100px;
+}
+
+.face {
+    position: absolute;
+    transform: perspective(600px) rotateY(0deg);
+    backface-visibility: hidden;
+    transition: transform .5s linear;
+    background: #ffffff 0 0/ 30px no-repeat;
+}
+
+.card:hover > .back {
+    transform: perspective(600px) rotateY(0deg);
+}
+
+.card:hover > .face {
+    transform: perspective(600px) rotateY(180deg);
+}
+
+.face, .back {
+    height: 100px;
+    width: 80px;
+    border-radius: 4px;
 }
 
 .heart {
@@ -67,3 +120,5 @@ body {
     border-radius: 4px;
 
 }
+
+
